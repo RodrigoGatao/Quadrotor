@@ -58,6 +58,7 @@ private:
     MatrixXd b1;
     MatrixXd b2;
     MatrixXd b3;
+    bool dash_line = true;
 
 public slots:
     void createLines(const QVector3D &v0, const QVector3D &v1,

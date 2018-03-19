@@ -4,7 +4,8 @@
 #include "quad.h"
 #include "utils.h"
 #include"scenemodifier.h"
-
+#include"qcustomplot.h"
+#include"plot.h"
 
 
 using namespace std;
@@ -15,6 +16,12 @@ mainwindow::mainwindow(QWidget *parent) :
 {
     qRegisterMetaType<matrixds>("matrixds");
     ui->setupUi(this);
+    //mPlot = new QCustomPlot();
+//    ui->layout_x->addWidget(mPlot);
+//    ui->layout_x->setMargin(0);
+//    mPlot->xAxis->setRange(0,3.0);
+//    mPlot->xAxis->setRange(-3.0,3.0);
+//    posx = new plot(mPlot);
     ui->params_options->addItem("Mass");
     ui->params_options->addItem("L");
     ui->params_options->addItem("B");
@@ -42,8 +49,16 @@ mainwindow::~mainwindow()
 }
 
 void mainwindow::update_quadStates(matrixds state,matrixds old_state,matrixds des_state,matrixds old_des_state,double t){
+//    posx->set_x(t);
+//    posx->set_y(des_state.matrix[0][0]);
+//    posx->draw_graph();
+//    if(t>3){
+//        mPlot->xAxis->setRange(0,t);
+//    }
+//    mPlot->replot();
+//    ui->layout_x->update();
+
     ui->LcdTempo->display(t);
-    //cameraEntity->setViewCenter(QVector3D(state.matrix[0][0],state.matrix[0][1],state.matrix[0][2]));
     modifier->set_state(state,old_state,des_state,old_des_state);
     modifier->update_plot();
 

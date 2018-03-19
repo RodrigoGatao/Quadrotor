@@ -4,7 +4,7 @@
 #include"QMessageBox"
 #include"windows.h"
 #include"pso.h"
-
+#include<QVector>
 
 #include <QMainWindow>
 #include"scenemodifier.h"
@@ -23,12 +23,15 @@ namespace Ui {
 class mainwindow;
 }
 
+class QCustomPlot;
+class plot;
+
 class mainwindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit mainwindow(QWidget *parent = 0);
+    explicit mainwindow(QWidget *parent = nullptr);
     ~mainwindow();
     void init_3dquad();
 
@@ -38,7 +41,6 @@ private:
     bool quad_isrunning = false;
     scenemodifier *modifier;
     Qt3DRender::QCamera *cameraEntity;
-    //Qt3DCore::QEntity *rootEntity;
     Qt3DExtras::Qt3DWindow *view;
     pso optimization;
 
@@ -51,6 +53,8 @@ private slots:
     void on_add_waypoints_clicked();
     void on_change_controller_clicked();
     void on_optimize_gain_clicked();
+    QCustomPlot *mPlot;
+    plot *posx;
 
 public slots:
     void update_quadStates(matrixds state, matrixds old_state, matrixds des_state, matrixds old_des_state, double t);

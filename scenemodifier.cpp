@@ -234,7 +234,13 @@ void scenemodifier::set_params(params quadparams){
 void scenemodifier::create_trajectories(){
 
     this->createLines(QVector3D(old_state_s.matrix[0][0],old_state_s.matrix[0][1],old_state_s.matrix[0][2]),QVector3D(state_s.matrix[0][0],state_s.matrix[0][1],state_s.matrix[0][2]),1,true,"");
-    this->createLines(QVector3D(old_des_state_s.matrix[0][0],old_des_state_s.matrix[0][1],old_des_state_s.matrix[0][2]),QVector3D(des_state_s.matrix[0][0],des_state_s.matrix[0][1],des_state_s.matrix[0][2]),4,true,"");
+    if(dash_line){
+         this->createLines(QVector3D(old_des_state_s.matrix[0][0],old_des_state_s.matrix[0][1],old_des_state_s.matrix[0][2]),QVector3D(des_state_s.matrix[0][0],des_state_s.matrix[0][1],des_state_s.matrix[0][2]),4,true,"");
+         dash_line = false;
+    }
+    else{
+        dash_line = true;
+    }
 }
 
 scenemodifier::~scenemodifier()
@@ -316,9 +322,6 @@ void scenemodifier::createLines(const QVector3D &v0, const QVector3D &v1,
     line_mesh->setIndexOffset(0);
     line_mesh->setFirstInstance(0);
     line_mesh->setPrimitiveType(Qt3DRender::QGeometryRenderer::Lines);
-    if(index == 4){
-        line_mesh->setPrimitiveType(Qt3DRender::QGeometryRenderer::Points);
-    }
     line_mesh->setGeometry(geometry);
     line_mesh->setVertexCount(2);
 
@@ -336,7 +339,7 @@ void scenemodifier::createLines(const QVector3D &v0, const QVector3D &v1,
     }
     else if(index == 4){
         Qt3DExtras::QPhongMaterial *lineMaterial = new Qt3DExtras::QPhongMaterial();
-        lineMaterial->setAmbient(QColor("Black"));
+        lineMaterial->setAmbient(QColor("Darkred"));
         m_lineEntity->addComponent(lineMaterial);
     }
 

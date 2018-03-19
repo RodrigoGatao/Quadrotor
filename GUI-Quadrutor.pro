@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui printsupport
 QT +=3dcore 3drender 3dinput 3dextras
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -18,15 +18,20 @@ SOURCES += main.cpp\
     quad.cpp \
     controller.cpp \
     scenemodifier.cpp \
-    pso.cpp
+    pso.cpp \
+    qcustomplot.cpp \
+    plot.cpp
 
 HEADERS  += mainwindow.h \
     utils.h \
     quad.h \
     controller.h \
     scenemodifier.h \
-    pso.h
+    pso.h \
+    qcustomplot.h \
+    plot.h
 
 FORMS    += mainwindow.ui
 
 DISTFILES +=
+QMAKE_CXXFLAGS += -std=gnu++14
