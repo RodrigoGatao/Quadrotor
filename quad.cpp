@@ -2,7 +2,7 @@
 #include "math.h"
 #include "utils.h"
 #include "iostream"
-#include"windows.h"
+//#include"windows.h"
 #define PI  3.141516
 using namespace std;
 
@@ -53,7 +53,7 @@ void quad::run(){
         motor = controlhandle->update_motor(t,state);
         model();
         emit emit_quadStates(state,old_state,des_state,old_des_state,t);
-        Sleep(quadparams.dt * 1000);
+        msleep(quadparams.dt * 1000);
     }
 }
 

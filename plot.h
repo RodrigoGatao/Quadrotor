@@ -20,6 +20,8 @@ public:
         my << y;
     }
     void clear();
+    void set_state();
+    void set_des_state();
 private:
     QCPGraph *m_graph;
     QVector<double> mx;

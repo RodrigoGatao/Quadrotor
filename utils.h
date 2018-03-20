@@ -1,6 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
-#include"C:\Qt\Eigen\Eigen/Dense"
+#include<eigen3/Eigen/Dense>
+//#include"C:\Qt\Eigen3\Eigen3/Dense"
 #include <utility>
 #include<vector>
 #define PI 3.14159265

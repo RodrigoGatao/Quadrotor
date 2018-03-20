@@ -16,19 +16,20 @@ controller::controller()
     I = receive_matrix(3,3);
     waypoints.l = 1;
 
-    matrixds tu = read_points("config/tu_gain.txt");
+    matrixds tu = read_points("config/tu_gain");
     tu_gain.kp_thrust = tu.matrix[0][0];
     tu_gain.kd_thrust = tu.matrix[1][0];
     tu_gain.kp_moment = tu.matrix[2][0];
     tu_gain.kd_moment = tu.matrix[3][0];
 
-    matrixds gt = read_points("config/gt_gain.txt");
+    matrixds gt = read_points("config/gt_gain");
+    print_Matrix(gt);
     gt_gain.kp_thrust = gt.matrix[0][0];
     gt_gain.kd_thrust = gt.matrix[1][0];
     gt_gain.kp_moment = gt.matrix[2][0];
     gt_gain.kd_moment = gt.matrix[3][0];
 
-    matrixds l = read_points("config/l_gain.txt");
+    matrixds l = read_points("config/l_gain");
     l_gain.kp_xy = l.matrix[0][0];
     l_gain.kd_xy = l.matrix[1][0];
     l_gain.kp_z = l.matrix[2][0];
