@@ -37,12 +37,13 @@ private:
    matrixds motor;
    matrixds b3;
    matrixds waypoints;
-   controller *controlhandle;
+
    double t = 0;
    double iteration =  0;
    bool is_running = false;
 
 public:
+   controller *controlhandle;
     quad();
     void init_Quad();
     void init_waypoints();

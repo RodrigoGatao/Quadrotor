@@ -253,6 +253,8 @@ void controller::thrust_up_controller(double t, matrixds state){
     B << F(0,0), M(0,0), M(1,0), M(2,0);
     motor = transposed_matrix(mxd2mds(A.inverse() * B));
 
+    set_des_ang(des_ang(0,0),des_ang(1,0));
+
 }
 
 void controller::geometric_tracking(double t, matrixds state)
@@ -321,6 +323,10 @@ void controller::geometric_tracking(double t, matrixds state)
          b, -b, b, -b;
     B << F(0,0), M(0,0), M(1,0), M(2,0);
     motor = transposed_matrix(mxd2mds(A.inverse() * B));
+
+
+    set_des_ang(des_ang(0,0),des_ang(1,0));
+
    // print_Matrix(motor);
     /*****************************************************************************************************
     motor.matrix[0][0] = sqrt(F(0,0)/(4*k) - I.matrix[1][1]*M(1,0)/(2*k*l) + I.matrix[2][2]*M(2,0)/(4*b));
@@ -384,6 +390,8 @@ void controller::linear_controller(double t, matrixds state){
 
         motor = transposed_matrix(mxd2mds(A.inverse()*B));
 
+
+        set_des_ang(phides,thetades);
 }
 
 matrixds controller::next_state(double dt,matrixds state){
@@ -446,4 +454,14 @@ void controller::set_l_gain(double kp_xy, double kd_xy, double kp_z, double kd_z
     l_gain.kd_z = kd_z;
     l_gain.kp_moment = kp_moment;
     l_gain.kd_moment = kd_moment;
+}
+
+void controller::set_des_ang(double des_roll, double des_pitch){
+    des_roll_pitch = receive_matrix(1,2);
+    des_roll_pitch.matrix[0][0] = des_roll;
+    des_roll_pitch.matrix[0][1] = des_pitch;
+}
+
+matrixds controller::get_des_ang(){
+    return des_roll_pitch;
 }

@@ -41,6 +41,7 @@ private:
     double b;
     double l;
     int choose_controller = 3;
+    matrixds des_roll_pitch;
 
 public:
     controller();
@@ -56,6 +57,10 @@ public:
     void set_gt_gain(double kp_thrust, double kd_thrust, double kp_moment, double kd_moment);
     void set_tu_gain(double kp_thrust, double kd_thrust, double kp_moment, double kd_moment);
     void set_l_gain(double kp_xy, double kd_xy,double kp_z, double kd_z, double kp_moment, double kd_moment);
+
+    void set_des_ang(double des_roll, double des_pitch);
+    matrixds get_des_ang();
+
 };
 
 #endif // CONTROLLER_H

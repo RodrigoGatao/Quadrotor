@@ -240,4 +240,21 @@ void pso::optimize(){
     }
     cout << "erro" << best_fitness << endl;
     cout << "pos" << best_pos << endl;
+
+    if(control == 1){
+        if(best_fitness < fob(transposed_matrix(read_points("config/l_gain")))){
+            write_points("config/l_gaing",mxd2mds(best_pos.transpose()));
+        }
+    }
+    else if (control == 2){
+        if(best_fitness < fob(transposed_matrix(read_points("config/tu_gain")))){
+            write_points("config/tu_gaing",mxd2mds(best_pos.transpose()));
+        }
+    }
+    else if(control == 3){
+        if(best_fitness < fob(transposed_matrix(read_points("config/tu_gain")))){
+            write_points("config/tu_gaing",mxd2mds(best_pos.transpose()));
+        }
+    }
+
 }
