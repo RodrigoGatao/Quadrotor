@@ -14,10 +14,10 @@ using namespace std;
 
 typedef std::vector<std::vector<double>> matrixd;
 
-/**
+    /**
  * @brief The matrixds struct has the parameters of a matrix
  */
-struct matrixds{
+    struct matrixds{
 
     int c;
     int l;

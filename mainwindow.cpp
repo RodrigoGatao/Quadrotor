@@ -43,72 +43,6 @@ mainwindow::~mainwindow()
     delete ui;
 }
 
-void mainwindow::update_quadStates(matrixds state,matrixds old_state,matrixds des_state,matrixds old_des_state,double t){
-
-    update_2dplot(state,des_state,t);
-    ui->LcdTempo->display(t);
-    modifier->set_state(state,old_state,des_state,old_des_state);
-    modifier->update_plot();
-
-}
-
-//Altera Botão start
-void mainwindow::on_start_quad_clicked()
-{
-    if(quad_isrunning == false)
-    {
-        ui->start_quad->setText("Stop");
-        quad_isrunning = true;
-        quadrotor.set_run(1);
-        //Inicia thread
-        quadrotor.start();
-    }else
-    {
-        ui->start_quad->setText("Play");
-        quad_isrunning = false;
-        //Finaliza thread alterando variavel booleana is_running
-        quadrotor.set_run(0);
-        cout << 0 << endl;
-    }
-}
-
-//Pegando valores de parametros que podem ser alterados
-void mainwindow::on_change_params_clicked(){
-
-    string quad_params_decision = ui->params_options->currentText().toUtf8().constData();//Pega valor da comboBox
-    string value_s = ui->Params_value->text().toUtf8().constData(); //Paga valor do parametro
-    double value = atof(value_s.c_str());//StringToDouble
-
-    int num_params;
-
-    if(quad_params_decision == "Mass"){
-        num_params = 1;
-    }else if(quad_params_decision == "L"){
-            num_params = 2;
-
-    }else if(quad_params_decision == "B"){
-            num_params = 3;
-
-    }else if(quad_params_decision == "K"){
-            num_params = 4;
-
-    }else if(quad_params_decision == "Ixx"){
-            num_params = 5;
-
-    }else if(quad_params_decision == "Iyy"){
-            num_params = 6;
-
-    }else if(quad_params_decision == "Izz"){
-            num_params = 7;
-    }
-    quadrotor.setParams(num_params,value);
-    optimization.set_params(quadrotor.get_params());
-    quadrotor.init_Quad();
-    init_3dquad();
-    //clear_2dplot();
-    ui->LcdTempo->display(0);
-}
-
 void mainwindow::on_add_waypoints_clicked(){
 
     string w_x = ui->x->text().toUtf8().constData(); //Paga valor do parametro
@@ -158,6 +92,161 @@ void mainwindow::on_add_waypoints_clicked(){
     }
 }
 
+void mainwindow::on_change_controller_clicked(){
+    string quad_controller_decision = ui->controller_options->currentText().toUtf8().constData();
+    if(quad_controller_decision == "Linear"){
+        quadrotor.set_controller(1);
+    }
+    else if(quad_controller_decision == "Thrust up"){
+        quadrotor.set_controller(2);
+    }
+    else if(quad_controller_decision == "Geometric Tracking"){
+        quadrotor.set_controller(3);
+    }
+    else{
+        quadrotor.set_controller(3);
+    }
+}
+
+void mainwindow::on_change_params_clicked(){
+
+    string quad_params_decision = ui->params_options->currentText().toUtf8().constData();//Pega valor da comboBox
+    string value_s = ui->Params_value->text().toUtf8().constData(); //Paga valor do parametro
+    double value = atof(value_s.c_str());//StringToDouble
+
+    int num_params;
+
+    if(quad_params_decision == "Mass"){
+        num_params = 1;
+    }else if(quad_params_decision == "L"){
+            num_params = 2;
+
+    }else if(quad_params_decision == "B"){
+            num_params = 3;
+
+    }else if(quad_params_decision == "K"){
+            num_params = 4;
+
+    }else if(quad_params_decision == "Ixx"){
+            num_params = 5;
+
+    }else if(quad_params_decision == "Iyy"){
+            num_params = 6;
+
+    }else if(quad_params_decision == "Izz"){
+            num_params = 7;
+    }
+    quadrotor.setParams(num_params,value);
+    optimization.set_params(quadrotor.get_params());
+    quadrotor.init_Quad();
+    init_3dquad();
+    //clear_2dplot();
+    ui->LcdTempo->display(0);
+}
+
+void mainwindow::on_optimize_gain_clicked(){
+    optimization.set_params(quadrotor.get_params());
+    optimization.set_waypoints(quadrotor.get_waypoints());
+    string quad_controller_decision = ui->controller_options->currentText().toUtf8().constData();
+
+    if(quad_controller_decision == "Linear"){
+        optimization.set_control(1);
+    }
+    else if(quad_controller_decision == "Thrust up"){
+        optimization.set_control(2);
+    }
+    else if(quad_controller_decision == "Geometric Tracking"){
+        optimization.set_control(3);
+    }
+    else{
+        optimization.set_control(3);
+    }
+
+    optimization.optimize();
+
+}
+
+void mainwindow::on_reset_quad_clicked(){
+    quadrotor.init_Quad();
+    init_3dquad();
+    clear_2dplot();
+    ui->LcdTempo->display(0);
+}
+
+void mainwindow::on_resetway_clicked(){
+    quadrotor.init_waypoints();
+    quadrotor.init_Quad();
+    init_3dquad();
+    //clear_2dplot();
+    ui->LcdTempo->display(0);
+}
+
+void mainwindow::on_start_quad_clicked()
+{
+    if(quad_isrunning == false)
+    {
+        ui->start_quad->setText("Stop");
+        quad_isrunning = true;
+        quadrotor.set_run(1);
+        //Inicia thread
+        quadrotor.start();
+    }else
+    {
+        ui->start_quad->setText("Play");
+        quad_isrunning = false;
+        //Finaliza thread alterando variavel booleana is_running
+        quadrotor.set_run(0);
+        cout << 0 << endl;
+    }
+}
+
+
+void mainwindow::clear_2dplot(){
+
+    state_x->clear();
+    state_y->clear();
+    state_z->clear();
+    state_roll->clear();
+    state_pitch->clear();
+    state_yaw->clear();
+
+    des_state_x->clear();
+    des_state_y->clear();
+    des_state_z->clear();
+    des_state_roll->clear();
+    des_state_pitch->clear();
+    des_state_yaw->clear();
+
+    state_x->draw_graph();
+    state_y->draw_graph();
+    state_z->draw_graph();
+    state_roll->draw_graph();
+    state_pitch->draw_graph();
+    state_yaw->draw_graph();
+
+    des_state_x->draw_graph();
+    des_state_y->draw_graph();
+    des_state_z->draw_graph();
+    des_state_roll->draw_graph();
+    des_state_pitch->draw_graph();
+    des_state_yaw->draw_graph();
+
+    m_plotx->replot();
+    m_ploty->replot();
+    m_plotz->replot();
+    m_plotroll->replot();
+    m_plotpitch->replot();
+    m_plotyaw->replot();
+
+    ui->layout_x->update();
+    ui->layout_y->update();
+    ui->layout_z->update();
+    ui->layout_roll->update();
+    ui->layout_pitch->update();
+    ui->layout_yaw->update();
+
+}
+
 void mainwindow::init_3dquad(){
 
 
@@ -201,59 +290,6 @@ void mainwindow::init_3dquad(){
    view->setRootEntity(rootEntity);
 
 
-
-}
-
-void mainwindow::on_reset_quad_clicked(){
-    quadrotor.init_Quad();
-    init_3dquad();
-    clear_2dplot();
-    ui->LcdTempo->display(0);
-}
-
-void mainwindow::on_resetway_clicked(){
-    quadrotor.init_waypoints();
-    quadrotor.init_Quad();
-    init_3dquad();
-    //clear_2dplot();
-    ui->LcdTempo->display(0);
-}
-
-void mainwindow::on_change_controller_clicked(){
-    string quad_controller_decision = ui->controller_options->currentText().toUtf8().constData();
-    if(quad_controller_decision == "Linear"){
-        quadrotor.set_controller(1);
-    }
-    else if(quad_controller_decision == "Thrust up"){
-        quadrotor.set_controller(2);
-    }
-    else if(quad_controller_decision == "Geometric Tracking"){
-        quadrotor.set_controller(3);
-    }
-    else{
-        quadrotor.set_controller(3);
-    }
-}
-
-void mainwindow::on_optimize_gain_clicked(){
-    optimization.set_params(quadrotor.get_params());
-    optimization.set_waypoints(quadrotor.get_waypoints());
-    string quad_controller_decision = ui->controller_options->currentText().toUtf8().constData();
-
-    if(quad_controller_decision == "Linear"){
-        optimization.set_control(1);
-    }
-    else if(quad_controller_decision == "Thrust up"){
-        optimization.set_control(2);
-    }
-    else if(quad_controller_decision == "Geometric Tracking"){
-        optimization.set_control(3);
-    }
-    else{
-        optimization.set_control(3);
-    }
-
-    optimization.optimize();
 
 }
 
@@ -403,48 +439,15 @@ void mainwindow::update_2dplot(matrixds state, matrixds des_state, double t){
 
 }
 
-void mainwindow::clear_2dplot(){
 
-    state_x->clear();
-    state_y->clear();
-    state_z->clear();
-    state_roll->clear();
-    state_pitch->clear();
-    state_yaw->clear();
 
-    des_state_x->clear();
-    des_state_y->clear();
-    des_state_z->clear();
-    des_state_roll->clear();
-    des_state_pitch->clear();
-    des_state_yaw->clear();
+void mainwindow::update_quadStates(matrixds state,matrixds old_state,matrixds des_state,matrixds old_des_state,double t){
 
-    state_x->draw_graph();
-    state_y->draw_graph();
-    state_z->draw_graph();
-    state_roll->draw_graph();
-    state_pitch->draw_graph();
-    state_yaw->draw_graph();
-
-    des_state_x->draw_graph();
-    des_state_y->draw_graph();
-    des_state_z->draw_graph();
-    des_state_roll->draw_graph();
-    des_state_pitch->draw_graph();
-    des_state_yaw->draw_graph();
-
-    m_plotx->replot();
-    m_ploty->replot();
-    m_plotz->replot();
-    m_plotroll->replot();
-    m_plotpitch->replot();
-    m_plotyaw->replot();
-
-    ui->layout_x->update();
-    ui->layout_y->update();
-    ui->layout_z->update();
-    ui->layout_roll->update();
-    ui->layout_pitch->update();
-    ui->layout_yaw->update();
+    update_2dplot(state,des_state,t);
+    ui->LcdTempo->display(t);
+    modifier->set_state(state,old_state,des_state,old_des_state);
+    modifier->update_plot();
 
 }
+
+

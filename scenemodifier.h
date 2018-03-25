@@ -28,39 +28,86 @@
 class scenemodifier: public QObject
 {
     Q_OBJECT
-public:
-    explicit scenemodifier(Qt3DCore::QEntity *rootEntity);
-    ~scenemodifier();
-    void set_params(params quadparams);
-    void set_state(matrixds state,matrixds old_state,matrixds des_state,matrixds old_des_state);
-    void create_trajectories();
-    void update_plot();
-    void create_grid();
-    void creat_sphere(double x,double y,double z);
 private:
     double l;
     Qt3DCore::QEntity *m_lineEntity;
     Qt3DCore::QEntity *m_rootEntity;
+    Qt3DCore::QEntity *quad_arm1;
+    Qt3DCore::QEntity *quad_arm2;
     Qt3DCore::QEntity *quad_motor1;
     Qt3DCore::QEntity *quad_motor2;
     Qt3DCore::QEntity *quad_motor3;
     Qt3DCore::QEntity *quad_motor4;
-    Qt3DCore::QEntity *quad_arm1;
-    Qt3DCore::QEntity *quad_arm2;
     Qt3DCore::QEntity *quad_up;
-    matrixds state_s;
-    matrixds old_state_s;
+
     matrixds des_state_s;
+    matrixds old_state_s;
     matrixds old_des_state_s;
+    matrixds state_s;
+
     MatrixXd a1;
     MatrixXd a2;
     MatrixXd a3;
     MatrixXd b1;
     MatrixXd b2;
     MatrixXd b3;
+
     bool dash_line = true;
 
+public:
+    explicit scenemodifier(Qt3DCore::QEntity *rootEntity);
+    ~scenemodifier();
+
+    /*****************
+     *  Miscelanius Functions *
+     ****************/
+    /**
+     * @brief create_grid plot a 3d grid
+     */
+    void create_grid();
+    /**
+     * @brief creat_sphere create a sphere in a desire position
+     * @param x
+     * @param y
+     * @param z
+     */
+    void creat_sphere(double x,double y,double z);
+    /**
+     * @brief create_trajectories updates plot of the trajectory
+     */
+    void create_trajectories();
+    /**
+     * @brief update_plot update plot of the quadrotor
+     */
+    void update_plot();
+
+    /*****************
+     *  Set Functions *
+     ****************/
+    /**
+     * @brief set_params defines the parameter of the quadrotor
+     * @param quadparams
+     */
+    void set_params(params quadparams);
+    /**
+     * @brief set_state updates the state of the quadrotor
+     * @param state
+     * @param old_state
+     * @param des_state
+     * @param old_des_state
+     */
+    void set_state(matrixds state,matrixds old_state,matrixds des_state,matrixds old_des_state);
+
+
 public slots:
+    /**
+     * @brief createLines creates and plot a new line
+     * @param v0
+     * @param v1
+     * @param index
+     * @param axis
+     * @param lod_param
+     */
     void createLines(const QVector3D &v0, const QVector3D &v1,
                          const unsigned int index, const bool axis, const QString &lod_param);
 

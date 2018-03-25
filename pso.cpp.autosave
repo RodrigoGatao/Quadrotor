@@ -9,7 +9,7 @@ pso::pso()
     controlhandle = new controller;
     waypoints = receive_matrix(100,5);
     waypoints.l = 1;
-    n = 70;
+    n = 50;
     srand(time(NULL));
     alpha = 0.03;
     beta = 0.0003;

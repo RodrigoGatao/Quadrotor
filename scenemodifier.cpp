@@ -29,6 +29,14 @@ scenemodifier::scenemodifier(Qt3DCore::QEntity *rootEntity)
     create_grid();
 }
 
+scenemodifier::~scenemodifier()
+{
+}
+
+
+/*****************
+ *  Miscelanius Functions *
+ ****************/
 void scenemodifier::create_grid(){
 
     int x_mim = -3, x_max = 3, y_mim = -3, y_max = 3, i,z_mim = 0,z_max = 3;
@@ -59,13 +67,121 @@ void scenemodifier::create_grid(){
 
 }
 
-void scenemodifier::set_state(matrixds state,matrixds old_state,matrixds des_state,matrixds old_des_state){
-    state_s = state;
-    old_state_s = old_state;
-    des_state_s = des_state;
-    old_des_state_s = old_des_state;
+void scenemodifier::creat_sphere(double x, double y, double z){
+    // Sphere shape data
+        Qt3DExtras::QSphereMesh *sphereMesh = new Qt3DExtras::QSphereMesh();
+        sphereMesh->setRings(20);
+        sphereMesh->setSlices(20);
+        sphereMesh->setRadius(0.015);
+
+        // Sphere mesh transform
+        Qt3DCore::QTransform *sphereTransform = new Qt3DCore::QTransform();
+
+        sphereTransform->setScale(1.0f);
+        sphereTransform->setTranslation(QVector3D(x,y,z));
+
+        Qt3DExtras::QPhongMaterial *sphereMaterial = new Qt3DExtras::QPhongMaterial();
+        sphereMaterial->setDiffuse(QColor("darkred"));
+
+        Qt3DCore::QEntity *m_sphereEntity;
+        // Sphere
+        m_sphereEntity = new Qt3DCore::QEntity(m_rootEntity);
+        m_sphereEntity->addComponent(sphereMesh);
+        m_sphereEntity->addComponent(sphereMaterial);
+        m_sphereEntity->addComponent(sphereTransform);
+}
+
+void scenemodifier::create_trajectories(){
+
+    this->createLines(QVector3D(old_state_s.matrix[0][0],old_state_s.matrix[0][1],old_state_s.matrix[0][2]),QVector3D(state_s.matrix[0][0],state_s.matrix[0][1],state_s.matrix[0][2]),1,true,"");
+    if(dash_line){
+         this->createLines(QVector3D(old_des_state_s.matrix[0][0],old_des_state_s.matrix[0][1],old_des_state_s.matrix[0][2]),QVector3D(des_state_s.matrix[0][0],des_state_s.matrix[0][1],des_state_s.matrix[0][2]),4,true,"");
+         dash_line = false;
+    }
+    else{
+        dash_line = true;
+    }
+}
+
+void scenemodifier::update_plot(){
+
+    MatrixXd pos(1,3);
+    MatrixXd motor1_pos(1,2), motor2_pos(1,2), motor3_pos(1,2), motor4_pos(1,2), up_pos(1,3);
+
+    double roll = state_s.matrix[2][0];
+    double pitch = state_s.matrix[2][1];
+    double yaw = state_s.matrix[2][2];
+
+    create_trajectories();
+
+    pos << state_s.matrix[0][0], state_s.matrix[0][1], state_s.matrix[0][2];
+
+    b1 = (mds2mxd(rotation_matrix(roll,pitch,yaw))*a1.transpose()).transpose();
+    b2 = (mds2mxd(rotation_matrix(roll,pitch,yaw))*a2.transpose()).transpose();
+    b3 = (mds2mxd(rotation_matrix(roll,pitch,yaw))*a3.transpose()).transpose();
+
+    motor1_pos = pos + b1*l;
+    motor2_pos = pos + b2*l;
+    motor3_pos = pos - b1*l;
+    motor4_pos = pos - b2*l;
+    up_pos = pos + b3*l/4;
+
+    //Motor1 Transform
+    Qt3DCore::QTransform *motor1Transform = new Qt3DCore::QTransform();
+    motor1Transform->setScale(1.0f);
+    motor1Transform->setRotation(QQuaternion::fromAxes(QVector3D(b1(0,0),b1(0,1),b1(0,2)),QVector3D(-b3(0,0),-b3(0,1),-b3(0,2)),QVector3D(b2(0,0),b2(0,1),b2(0,2))));
+    motor1Transform->setTranslation(QVector3D(motor1_pos(0,0),motor1_pos(0,1),motor1_pos(0,2)));
+
+    //motor2 Transform
+    Qt3DCore::QTransform *motor2Transform = new Qt3DCore::QTransform();
+    motor2Transform->setScale(1.0f);
+    motor2Transform->setRotation(QQuaternion::fromAxes(QVector3D(b1(0,0),b1(0,1),b1(0,2)),QVector3D(-b3(0,0),-b3(0,1),-b3(0,2)),QVector3D(b2(0,0),b2(0,1),b2(0,2))));
+    motor2Transform->setTranslation(QVector3D(motor2_pos(0,0),motor2_pos(0,1),motor2_pos(0,2)));
+
+    //motor3 Transform
+    Qt3DCore::QTransform *motor3Transform = new Qt3DCore::QTransform();
+    motor3Transform->setScale(1.0f);
+    motor3Transform->setRotation(QQuaternion::fromAxes(QVector3D(b1(0,0),b1(0,1),b1(0,2)),QVector3D(-b3(0,0),-b3(0,1),-b3(0,2)),QVector3D(b2(0,0),b2(0,1),b2(0,2))));
+    motor3Transform->setTranslation(QVector3D(motor3_pos(0,0),motor3_pos(0,1),motor3_pos(0,2)));
+
+    //motor4 Transform
+    Qt3DCore::QTransform *motor4Transform = new Qt3DCore::QTransform();
+    motor4Transform->setScale(1.0f);
+    motor4Transform->setRotation(QQuaternion::fromAxes(QVector3D(b1(0,0),b1(0,1),b1(0,2)),QVector3D(-b3(0,0),-b3(0,1),-b3(0,2)),QVector3D(b2(0,0),b2(0,1),b2(0,2))));
+    motor4Transform->setTranslation(QVector3D(motor4_pos(0,0),motor4_pos(0,1),motor4_pos(0,2)));
+
+    //up Transform
+    Qt3DCore::QTransform *upTransform = new Qt3DCore::QTransform();
+    upTransform->setScale(1.0f);
+    upTransform->setRotation(QQuaternion::fromAxes(QVector3D(b1(0,0),b1(0,1),b1(0,2)),QVector3D(-b3(0,0),-b3(0,1),-b3(0,2)),QVector3D(b2(0,0),b2(0,1),b2(0,2))));
+    upTransform->setTranslation(QVector3D(up_pos(0,0),up_pos(0,1),up_pos(0,2)));
+
+    //arm1 Transform
+    Qt3DCore::QTransform *arm1Transform = new Qt3DCore::QTransform();
+    arm1Transform->setScale(1.0f);
+    arm1Transform->setRotation(QQuaternion::fromAxes(QVector3D(b1(0,0),b1(0,1),b1(0,2)),QVector3D(b2(0,0),b2(0,1),b2(0,2)),QVector3D(b3(0,0),b3(0,1),b3(0,2))));
+    arm1Transform->setTranslation(QVector3D(pos(0,0),pos(0,1),pos(0,2)));
+
+    //arm2 Transform
+    Qt3DCore::QTransform *arm2Transform = new Qt3DCore::QTransform();
+    arm2Transform->setScale(1.0f);
+    arm2Transform->setRotation(QQuaternion::fromAxes(QVector3D(b2(0,0),b2(0,1),b2(0,2)),QVector3D(-b1(0,0),-b1(0,1),-b1(0,2)),QVector3D(b3(0,0),b3(0,1),b3(0,2))));
+    arm2Transform->setTranslation(QVector3D(pos(0,0),pos(0,1),pos(0,2)));
+
+    quad_motor1->addComponent(motor1Transform);
+    quad_motor2->addComponent(motor2Transform);
+    quad_motor3->addComponent(motor3Transform);
+    quad_motor4->addComponent(motor4Transform);
+    quad_up->addComponent(upTransform);
+    quad_arm1->addComponent(arm1Transform);
+    quad_arm2->addComponent(arm2Transform);
 
 }
+
+
+/*****************
+ *  Set Functions *
+ ****************/
 
 void scenemodifier::set_params(params quadparams){
     l = quadparams.l;
@@ -231,21 +347,16 @@ void scenemodifier::set_params(params quadparams){
     quad_arm2->addComponent(arm2Transform);
 }
 
-void scenemodifier::create_trajectories(){
+void scenemodifier::set_state(matrixds state,matrixds old_state,matrixds des_state,matrixds old_des_state){
+    state_s = state;
+    old_state_s = old_state;
+    des_state_s = des_state;
+    old_des_state_s = old_des_state;
 
-    this->createLines(QVector3D(old_state_s.matrix[0][0],old_state_s.matrix[0][1],old_state_s.matrix[0][2]),QVector3D(state_s.matrix[0][0],state_s.matrix[0][1],state_s.matrix[0][2]),1,true,"");
-    if(dash_line){
-         this->createLines(QVector3D(old_des_state_s.matrix[0][0],old_des_state_s.matrix[0][1],old_des_state_s.matrix[0][2]),QVector3D(des_state_s.matrix[0][0],des_state_s.matrix[0][1],des_state_s.matrix[0][2]),4,true,"");
-         dash_line = false;
-    }
-    else{
-        dash_line = true;
-    }
 }
 
-scenemodifier::~scenemodifier()
-{
-}
+
+
 
 void scenemodifier::createLines(const QVector3D &v0, const QVector3D &v1,
                                 const unsigned int index, const bool axis, const QString &lod_param)
@@ -350,101 +461,4 @@ void scenemodifier::createLines(const QVector3D &v0, const QVector3D &v1,
     }
 }
 
-void scenemodifier::update_plot(){
 
-    MatrixXd pos(1,3);
-    MatrixXd motor1_pos(1,2), motor2_pos(1,2), motor3_pos(1,2), motor4_pos(1,2), up_pos(1,3);
-
-    double roll = state_s.matrix[2][0];
-    double pitch = state_s.matrix[2][1];
-    double yaw = state_s.matrix[2][2];
-
-    create_trajectories();
-
-    pos << state_s.matrix[0][0], state_s.matrix[0][1], state_s.matrix[0][2];
-
-    b1 = (mds2mxd(rotation_matrix(roll,pitch,yaw))*a1.transpose()).transpose();
-    b2 = (mds2mxd(rotation_matrix(roll,pitch,yaw))*a2.transpose()).transpose();
-    b3 = (mds2mxd(rotation_matrix(roll,pitch,yaw))*a3.transpose()).transpose();
-
-    motor1_pos = pos + b1*l;
-    motor2_pos = pos + b2*l;
-    motor3_pos = pos - b1*l;
-    motor4_pos = pos - b2*l;
-    up_pos = pos + b3*l/4;
-
-    //Motor1 Transform
-    Qt3DCore::QTransform *motor1Transform = new Qt3DCore::QTransform();
-    motor1Transform->setScale(1.0f);
-    motor1Transform->setRotation(QQuaternion::fromAxes(QVector3D(b1(0,0),b1(0,1),b1(0,2)),QVector3D(-b3(0,0),-b3(0,1),-b3(0,2)),QVector3D(b2(0,0),b2(0,1),b2(0,2))));
-    motor1Transform->setTranslation(QVector3D(motor1_pos(0,0),motor1_pos(0,1),motor1_pos(0,2)));
-
-    //motor2 Transform
-    Qt3DCore::QTransform *motor2Transform = new Qt3DCore::QTransform();
-    motor2Transform->setScale(1.0f);
-    motor2Transform->setRotation(QQuaternion::fromAxes(QVector3D(b1(0,0),b1(0,1),b1(0,2)),QVector3D(-b3(0,0),-b3(0,1),-b3(0,2)),QVector3D(b2(0,0),b2(0,1),b2(0,2))));
-    motor2Transform->setTranslation(QVector3D(motor2_pos(0,0),motor2_pos(0,1),motor2_pos(0,2)));
-
-    //motor3 Transform
-    Qt3DCore::QTransform *motor3Transform = new Qt3DCore::QTransform();
-    motor3Transform->setScale(1.0f);
-    motor3Transform->setRotation(QQuaternion::fromAxes(QVector3D(b1(0,0),b1(0,1),b1(0,2)),QVector3D(-b3(0,0),-b3(0,1),-b3(0,2)),QVector3D(b2(0,0),b2(0,1),b2(0,2))));
-    motor3Transform->setTranslation(QVector3D(motor3_pos(0,0),motor3_pos(0,1),motor3_pos(0,2)));
-
-    //motor4 Transform
-    Qt3DCore::QTransform *motor4Transform = new Qt3DCore::QTransform();
-    motor4Transform->setScale(1.0f);
-    motor4Transform->setRotation(QQuaternion::fromAxes(QVector3D(b1(0,0),b1(0,1),b1(0,2)),QVector3D(-b3(0,0),-b3(0,1),-b3(0,2)),QVector3D(b2(0,0),b2(0,1),b2(0,2))));
-    motor4Transform->setTranslation(QVector3D(motor4_pos(0,0),motor4_pos(0,1),motor4_pos(0,2)));
-
-    //up Transform
-    Qt3DCore::QTransform *upTransform = new Qt3DCore::QTransform();
-    upTransform->setScale(1.0f);
-    upTransform->setRotation(QQuaternion::fromAxes(QVector3D(b1(0,0),b1(0,1),b1(0,2)),QVector3D(-b3(0,0),-b3(0,1),-b3(0,2)),QVector3D(b2(0,0),b2(0,1),b2(0,2))));
-    upTransform->setTranslation(QVector3D(up_pos(0,0),up_pos(0,1),up_pos(0,2)));
-
-    //arm1 Transform
-    Qt3DCore::QTransform *arm1Transform = new Qt3DCore::QTransform();
-    arm1Transform->setScale(1.0f);
-    arm1Transform->setRotation(QQuaternion::fromAxes(QVector3D(b1(0,0),b1(0,1),b1(0,2)),QVector3D(b2(0,0),b2(0,1),b2(0,2)),QVector3D(b3(0,0),b3(0,1),b3(0,2))));
-    arm1Transform->setTranslation(QVector3D(pos(0,0),pos(0,1),pos(0,2)));
-
-    //arm2 Transform
-    Qt3DCore::QTransform *arm2Transform = new Qt3DCore::QTransform();
-    arm2Transform->setScale(1.0f);
-    arm2Transform->setRotation(QQuaternion::fromAxes(QVector3D(b2(0,0),b2(0,1),b2(0,2)),QVector3D(-b1(0,0),-b1(0,1),-b1(0,2)),QVector3D(b3(0,0),b3(0,1),b3(0,2))));
-    arm2Transform->setTranslation(QVector3D(pos(0,0),pos(0,1),pos(0,2)));
-
-    quad_motor1->addComponent(motor1Transform);
-    quad_motor2->addComponent(motor2Transform);
-    quad_motor3->addComponent(motor3Transform);
-    quad_motor4->addComponent(motor4Transform);
-    quad_up->addComponent(upTransform);
-    quad_arm1->addComponent(arm1Transform);
-    quad_arm2->addComponent(arm2Transform);
-
-}
-
-void scenemodifier::creat_sphere(double x, double y, double z){
-    // Sphere shape data
-        Qt3DExtras::QSphereMesh *sphereMesh = new Qt3DExtras::QSphereMesh();
-        sphereMesh->setRings(20);
-        sphereMesh->setSlices(20);
-        sphereMesh->setRadius(0.015);
-
-        // Sphere mesh transform
-        Qt3DCore::QTransform *sphereTransform = new Qt3DCore::QTransform();
-
-        sphereTransform->setScale(1.0f);
-        sphereTransform->setTranslation(QVector3D(x,y,z));
-
-        Qt3DExtras::QPhongMaterial *sphereMaterial = new Qt3DExtras::QPhongMaterial();
-        sphereMaterial->setDiffuse(QColor("darkred"));
-
-        Qt3DCore::QEntity *m_sphereEntity;
-        // Sphere
-        m_sphereEntity = new Qt3DCore::QEntity(m_rootEntity);
-        m_sphereEntity->addComponent(sphereMesh);
-        m_sphereEntity->addComponent(sphereMaterial);
-        m_sphereEntity->addComponent(sphereTransform);
-}

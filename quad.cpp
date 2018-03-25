@@ -57,6 +57,23 @@ void quad::run(){
     }
 }
 
+/*****************
+ *  Miscelanius Functions *
+ ****************/
+void quad::init_params(){
+    setParams(1,0.468);
+    setParams(2,0.225);
+    setParams(3,1.14*pow(10,-7));
+    setParams(4,2.98*pow(10,-6));
+    setParams(5,0.004856);
+    setParams(6,0.004856);
+    setParams(7,0.008801);
+    setParams(8,9.81);
+    setParams(9,0.02);
+    controlhandle->set_params(quadparams.mass,quadparams.dt,quadparams.gravity,quadparams.Ixx,quadparams.Iyy,quadparams.Izz,quadparams.k,quadparams.b,quadparams.l);
+
+}
+
 void quad::init_Quad()
 {
 
@@ -78,20 +95,6 @@ void quad::init_Quad()
     t = 0;
     iteration = 0;
 
-
-}
-
-void quad::init_params(){
-    setParams(1,0.468);
-    setParams(2,0.225);
-    setParams(3,1.14*pow(10,-7));
-    setParams(4,2.98*pow(10,-6));
-    setParams(5,0.004856);
-    setParams(6,0.004856);
-    setParams(7,0.008801);
-    setParams(8,9.81);
-    setParams(9,0.02);
-    controlhandle->set_params(quadparams.mass,quadparams.dt,quadparams.gravity,quadparams.Ixx,quadparams.Iyy,quadparams.Izz,quadparams.k,quadparams.b,quadparams.l);
 
 }
 
@@ -170,7 +173,25 @@ void quad::model(){
     iteration++;
 }
 
-//Setando os parametros
+/*****************
+ *  Get Functions *
+ ****************/
+
+matrixds quad::get_waypoints(){
+    return waypoints;
+}
+
+params quad::get_params(){
+    return quadparams;
+}
+
+/*****************
+ *  Set Functions *
+ ****************/
+void quad::set_controller(int a){
+    controlhandle->set_controller(a);
+}
+
 void quad::setParams(int select, double value){
     switch (select) {
     case 1:
@@ -211,10 +232,6 @@ void quad::set_run(bool a){
     is_running = a;
 }
 
-matrixds quad::get_waypoints(){
-    return waypoints;
-}
-
 void quad::set_waypoints(matrixds matrix){
     waypoints.matrix[waypoints.l] = {{matrix.matrix[0][0],matrix.matrix[0][1],matrix.matrix[0][2],matrix.matrix[0][3],matrix.matrix[0][4]}};
     waypoints.l++;
@@ -222,13 +239,6 @@ void quad::set_waypoints(matrixds matrix){
     controlhandle->set_waypoints(waypoints);
 }
 
-params quad::get_params(){
-    return quadparams;
-}
-
-void quad::set_controller(int a){
-    controlhandle->set_controller(a);
-}
 
 
 
